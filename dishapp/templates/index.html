@@ -1,0 +1,119 @@
+<!--the html file that going tobe included in the codes -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DishMicroBlog</title>
+
+  {% if not session.get("STYLE")%}
+  <link rel='stylesheet' class="styleType" href="{{url_for('static',filename='style/mystyle_white.css')}}">
+  {%else%}
+    <link rel='stylesheet' class="styleType" href="{{url_for('static',filename=session.get('STYLE'))}}">
+  {%endif%}
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script type="text/javascript" src ="{{url_for('static',filename='javascript/dish.js')}}">
+  </script>
+    <script type="text/javascript" src ="{{url_for('static',filename='javascript/addLike.js')}}">
+  </script>
+</head>
+<body class="table">
+    <div class="nav">
+        DishApp:
+<!--       links for the uses who have login the webpage-->
+        {% if not session.get("USERNAME") %}
+        <a href="{{url_for('login')}}" class="link">Login</a>
+        <a href="{{url_for('signup')}}" class="link">Sign up</a>
+        {% endif %}
+<!--      links  for the user who haven't login the web page-->
+        {% if session.get("USERNAME") %}
+        <a href="{{url_for('post')}}" class="link">Write a Post</a>
+        <a href="{{url_for('logout') }}" class="link">Logout</a>
+        {% endif %}
+        <a href = {{url_for('static',filename='plain.html')}} class="link">Static Page</a>
+
+
+<!--this is the form that used to achieve search function-->
+{%if title == "Index"%}
+        <form action="" method="post" enctype="multipart/form-data" novalidate>
+             {{ form.hidden_tag() }}
+
+             {{form.criteria.label}}
+             {{form.criteria(class= "flask_form")}}
+
+             {% for error in form.criteria.error %}
+             <span style="color: red">[{{error}}]</span>
+             {% endfor %}
+             {{form.search()}}
+        &nbsp;
+<!--This search bar is used to arrange recipes in a certain order-->
+
+            {{form.order.label}}
+            {{form.order()}}
+
+            {% for error in form.order.error %}
+            <span style="color: red">[{{error}}]</span>
+            {% endfor %}
+            {{form.filter()}}
+       </form>
+        {%endif%}
+<!--        from to show user's avatar, if the user has set his own avatar, it will user the path of the avatar to show the picture
+else it will use a default picture for avatar-->
+        {% if session.get("USERNAME") %}
+        {% if profile.avatar %}
+        <a class="pic_link" href="{{ url_for('profile') }}"class="link"><img title ="click to edit your profile"class = "pic" src={{url_for('static',filename=profile.avatar+'') }}></a>
+        {% else %}
+        <a class="pic_link" href="{{ url_for('profile') }}"class="link"><img title ="click to edit your profile" class = "pic" src={{url_for('static',filename='uploaded_Avatar/default.png') }}></a>
+        {% endif %}
+        {% endif %}
+        <!-- add a link to activate the function inside javascript which can change
+        the style of the webside -->
+    <select id="select_style" onchange="changeStyle()">
+        {%if session.get("STYLE") == 'style/mystyle_white.css' or not session.get("STYLE")%}
+        <option value="white" selected="selected">Light mode</option>
+        <option value="black">Dark mode</option>
+        {%else%}
+        <option value="white">Light mode</option>
+        <option value="black" selected="selected">Dark mode</option>
+        {%endif%}
+    </select>
+    </div>
+    <hr>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li class="error_span">{{message}}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+<!--    basic explanation of the website-->
+    <div class="pure_word_div">
+<p class="intro">
+    We are a recipe software. Here you can search the recipes uploaded by other users and upload some recipes yourself, 
+    but you need to log in to your account before that
+</p>
+<p class="intro">
+    here are some examples of recipes
+
+</p>
+<p class="intro"> 
+    If you want to be a part of us, pleace click login if you have account, sign in if you have not register yet
+</p>
+
+        </div>
+<br>
+    {% for post in prev_posts %}
+    <!--show the post the have been posted by users-->
+        <div class="div_dishes"> <a class = "author_link {{post.user_id}}">{{post.author}}</a> post the dish:
+            <a href="/index/{{post.id}}" class="dish_link">{{post.title}}</a>
+            <img class="picthumb"
+                                                                                  id="like" onclick="addLike('{{post.id}}')"
+                                                                                  src={{url_for('static',filename='javascript/thumbup.jpg')}}
+                                                                                  title="thumb up" ><span class="like_number">{{post.likes}}</span>
+            <a class="dish_pic_link" href="/index/{{post.id}}"class="link"><img title ="dish_pic" class = "dish_pic" src={{url_for('static',filename=post.dish_pic+'')}}></a>
+        </div>
+    {% endfor %}
+
